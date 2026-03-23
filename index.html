@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Install Mobile Builds</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Install the app</h1>
+        <p id="versionLine" class="muted"></p>
+      </header>
+
+      <section class="card">
+        <h2>iOS (TestFlight)</h2>
+        <p class="muted" id="iosSubtitle">
+          Opens in TestFlight.
+        </p>
+        <a id="iosLink" class="btn btnPrimary" href="#" target="_blank" rel="noreferrer">
+          Download iOS build
+        </a>
+      </section>
+
+      <section class="card">
+        <h2>Android (APK)</h2>
+        <p class="muted" id="androidSubtitle">
+          Downloads an APK you can install.
+        </p>
+        <a id="androidLink" class="btn btnPrimary" href="#">
+          Download Android APK
+        </a>
+        <p class="fineprint">
+          If your phone blocks the install, allow “Install unknown apps” for your browser/files app.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Install steps</h2>
+        <ol>
+          <li>Download the build for your platform.</li>
+          <li>Open the downloaded file.</li>
+          <li>Install and launch the app.</li>
+        </ol>
+      </section>
+
+      <footer class="footer">
+        <span class="muted">Build links are loaded from <code>builds.json</code>.</span>
+      </footer>
+    </main>
+
+    <script>
+      async function loadBuilds() {
+        const res = await fetch(`${import.meta.env.BASE_URL}builds.json`, { cache: "no-store" });
+        // const res = await fetch("./builds.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load builds.json");
+        return res.json();
+      }
+
+      function setLink(a, href, text) {
+        a.href = href;
+        if (text) a.textContent = text;
+      }
+
+      (async function main() {
+        try {
+          const builds = await loadBuilds();
+
+          document.getElementById("versionLine").textContent =
+            builds.version ? ("Version: " + builds.version) : "";
+
+          if (builds.ios && builds.ios.url) {
+            const iosLink = document.getElementById("iosLink");
+            iosLink.classList.remove("btnSecondary");
+            setLink(iosLink, builds.ios.url, builds.ios.label || "Download iOS build");
+          }
+
+          if (builds.android && builds.android.url) {
+            const androidLink = document.getElementById("androidLink");
+            androidLink.classList.remove("btnSecondary");
+            setLink(androidLink, builds.android.url, builds.android.label || "Download Android APK");
+          }
+        } catch (e) {
+          document.getElementById("versionLine").textContent = "";
+          document.getElementById("iosSubtitle").textContent = "Update builds.json to provide iOS link.";
+          document.getElementById("androidSubtitle").textContent = "Update builds.json to provide Android link.";
+        }
+      })();
+    </script>
+  </body>
+</html>
